@@ -7,11 +7,14 @@ const cat =
     \\ [w w]
 ;
 
-const cat_width = 6;
+const box_width = 6;
+const cat_widht = 8;
+// As string for less lines as code, more efficient if we do as int direct i think
+const default_columns = "100";
 
 // I hate string manipulations
 pub fn create_box(allocator: std.mem.Allocator, name: *const []u8, box_wall_char: u8, box_floor_char: u8, box_space_char: u8) ![]const u8 {
-    const name_length = if (cat_width > name.*.len) cat_width else name.*.len;
+    const name_length = if (box_width > name.*.len) box_width else name.*.len;
     const line_lenght = 1 + name_length + 1 + 1;
     var buffer = try allocator.alloc(u8, line_lenght * 3);
 
@@ -69,9 +72,19 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const box_alloc = gpa.allocator();
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
+    // Get the Terminal column size from tput
+    // @zig-fmt off
+    const res = try std.ChildProcess.exec(.{ .allocator = std.heap.page_allocator, .argv = &[_][]const u8{ "tput", "cols" } });
+    // @zig-fmt on
+
+    // Last character is a \n so slice it
+    const cols: usize = std.fmt.parseInt(usize, res.stdout[0 .. res.stdout.len - 1], 10) catch 50;
+
+    // So if we have less columns then cat width, we can't really display anything so we exit
+    if (cols < cat_widht) {
+        std.os.exit(0);
+    }
+
     const stdout_file = std.io.getStdOut().writer();
     var bw = std.io.bufferedWriter(stdout_file);
     const stdout = bw.writer();
@@ -79,7 +92,7 @@ pub fn main() !void {
     var hostname: [std.os.HOST_NAME_MAX]u8 = undefined;
     const name = try std.os.gethostname(&hostname);
 
-    const box = try create_box(box_alloc, &name);
+    const box = try create_box(box_alloc, &name, '|', '=', ' ');
     defer box_alloc.free(box);
 
     try stdout.print(cat, .{});
