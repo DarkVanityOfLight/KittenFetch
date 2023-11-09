@@ -1,0 +1,22 @@
+
+# Build files
+zig-cache/
+zig-out/
+
+# Dependency management
+zig-deps/
+
+# Generated files
+*.h
+*.o
+*.a
+
+# IDE files
+.vscode/
+.idea/
+
+# Miscellaneous
+*.log
+*.swp
+.DS_Store
+Thumbs.db
