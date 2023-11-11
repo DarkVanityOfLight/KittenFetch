@@ -1,4 +1,5 @@
 const std = @import("std");
+const testing = @import("std").testing;
 
 const cat =
     \\ /|/|
@@ -66,6 +67,41 @@ pub fn create_box(allocator: std.mem.Allocator, name: *const []u8, box_wall_char
     buffer[i + 1] = '\n';
 
     return buffer;
+}
+
+fn output(lines: [][]const u8, file: std.fs.File) !void {
+    const writer = file.writer();
+    for (lines) |line| {
+        _ = try writer.write(line);
+        _ = try writer.writeByte('\n');
+    }
+}
+
+test "Test output function" {
+    var lines = [_][]const u8{
+        "Hello, ",
+        "world!",
+    };
+
+    const tempFileName = "temp_test_file.txt";
+    var tmp_dir = testing.tmpDir(.{});
+    defer tmp_dir.cleanup();
+
+    // Create a temporary file for testing
+    var file = try tmp_dir.dir.createFile(tempFileName, .{ .read = true });
+    defer file.close();
+
+    // Call the function with the test data
+    try output(&lines, file);
+
+    const file2 = try tmp_dir.dir.openFile(tempFileName, .{});
+    defer file2.close();
+
+    // Read the content of the file and assert it's as expected
+    const content = try file2.readToEndAlloc(testing.allocator, 1024);
+    defer testing.allocator.free(content);
+
+    try testing.expect(std.mem.eql(u8, content, "Hello, \nworld!\n"));
 }
 
 pub fn main() !void {
