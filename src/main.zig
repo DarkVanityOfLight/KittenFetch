@@ -21,9 +21,6 @@ const expand_height = 0;
 
 const space_between = 5;
 
-// As string for less lines as code, more efficient if we do as int direct i think
-const default_columns = "100";
-
 // Prepare what we can at comptime
 // Copy the cat to it and
 comptime {
@@ -88,9 +85,9 @@ pub fn create_box(allocator: std.mem.Allocator, name: []const u8, box_wall_char:
 }
 
 // Render a cat into the provided buffer
-fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + expand_height][]const u8, colsize: usize, hostname: []const u8, username: []const u8) !void {
+fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + expand_height][]const u8, hostname: []const u8, username: []const u8) !void {
 
-    // Create space between spaces
+    // Create space_between spaces
     var spaces: [space_between]u8 = undefined;
     for (0..space_between) |i| {
         spaces[i] = ' ';
@@ -139,6 +136,7 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
     buffer[2] = line2;
 
     //Line 3 Contains the circles
+    //TODO: Unicode/Ascii????? can't display ⚫using u8
 
     var line3: []u8 = undefined;
     line3 = try allocator.alloc(u8, cat_widht + space_between + boxlength);
@@ -155,6 +153,7 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
     buffer[3] = line3;
 
     // TODO: This is very ugly redo
+    // Maybe let it render into a given buffer or something
     const box = try create_box(allocator, hostname, '|', '=', ' ');
 
     const name_length = if (box_width > hostname.len) box_width else hostname.len;
@@ -186,8 +185,6 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
 
     std.mem.copy(u8, line6, box[line_lenght * 2 .. line_lenght * 3]);
     buffer[6] = line6;
-
-    _ = colsize;
 }
 
 fn output(lines: [][]const u8, file: std.fs.File) !void {
@@ -229,19 +226,6 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const box_alloc = gpa.allocator();
 
-    // Get the Terminal column size from tput
-    // @zig-fmt off
-    const res = try std.ChildProcess.exec(.{ .allocator = std.heap.page_allocator, .argv = &[_][]const u8{ "tput", "cols" } });
-    // @zig-fmt on
-
-    // Last character is a \n so slice it
-    const cols: usize = std.fmt.parseInt(usize, res.stdout[0 .. res.stdout.len - 1], 10) catch 50;
-
-    // So if we have less columns then cat width, we can't really display anything so we exit
-    if (cols < cat_widht) {
-        std.os.exit(0);
-    }
-
     // Allocate the cat buffer
     var content: [cat_height + box_height + expand_height][]u8 = undefined;
 
@@ -250,7 +234,7 @@ pub fn main() !void {
     const name = try std.os.gethostname(&hostname);
 
     //Render the cat to the buffer
-    try renderCat(box_alloc, &content, cols, name, "Hi");
+    try renderCat(box_alloc, &content, name, "Hi");
 
     // Output the cat
     const stdout_file = std.io.getStdOut();
