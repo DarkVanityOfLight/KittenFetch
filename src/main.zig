@@ -96,31 +96,25 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
     // Line 0 is just the cat
     buffer[0] = cat[0];
 
-    // Line 1 contains the username
+    // Line 1 contains nothing really
     var line1: []u8 = undefined;
-    line1 = try allocator.alloc(u8, 1 + cat_widht + space_between + username.len + 1);
+    line1 = try allocator.alloc(u8, cat_widht);
 
     std.mem.copy(u8, line1, cat[1]);
-    std.mem.copy(u8, line1[cat_widht..line1.len], &spaces);
-    line1[cat_widht + space_between] = ' ';
-    std.mem.copy(u8, line1[cat_widht + space_between + 1 .. line1.len], username);
+    //std.mem.copy(u8, line1[cat_widht..line1.len], &spaces);
+    //line1[cat_widht + space_between] = ' ';
+    //std.mem.copy(u8, line1[cat_widht + space_between + 1 .. line1.len], username);
 
     //line1[cat_widht + space_between + username.len + 1] = '@';
     // td.mem.copy(u8, line1[cat_widht + space_between + username.len + 1 + 1 .. line1.len], hostname);
 
-    line1[line1.len - 1] = ' ';
+    //line1[line1.len - 1] = ' ';
 
     buffer[1] = line1;
 
     // Line 2 contains the top of the second box
 
     var boxlength: usize = 1 + username.len + 1;
-
-    if (boxlength < 5) {
-        boxlength = 5;
-    }
-
-    boxlength = boxlength + ((boxlength - 5) % 3);
 
     var line2: []u8 = undefined;
     line2 = try allocator.alloc(u8, cat_widht + space_between + boxlength);
@@ -135,18 +129,14 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
     line2[line2.len - 1] = '|';
     buffer[2] = line2;
 
-    //Line 3 Contains the circles
-    //TODO: Unicode/Ascii????? can't display ⚫using u8
+    //Line 3 Contains the username in the box
 
     var line3: []u8 = undefined;
     line3 = try allocator.alloc(u8, cat_widht + space_between + boxlength);
     std.mem.copy(u8, line3, cat[3]);
     std.mem.copy(u8, line3[cat_widht..line3.len], &spaces);
     line3[cat_widht + space_between] = '|';
-
-    for (cat_widht + space_between + 1..line2.len - 1) |i| {
-        line3[i] = ' ';
-    }
+    std.mem.copy(u8, line3[cat_widht + space_between + 1 .. line3.len], username);
 
     line3[line2.len - 1] = '|';
 
