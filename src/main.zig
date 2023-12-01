@@ -229,12 +229,14 @@ pub fn main() !void {
     // Allocate the cat buffer
     var content: [cat_height + box_height + expand_height][]u8 = undefined;
 
-    // Get the host name
+    // Get the host name(wtf)
     var hostname: [std.os.HOST_NAME_MAX]u8 = undefined;
-    const name = try std.os.gethostname(&hostname);
+    const hostname_slice = try std.os.gethostname(&hostname);
+
+    const user = std.os.getenv("LOGNAME") orelse "";
 
     //Render the cat to the buffer
-    try renderCat(box_alloc, &content, name, "Hi");
+    try renderCat(box_alloc, &content, hostname_slice, user);
 
     // Output the cat
     const stdout_file = std.io.getStdOut();
