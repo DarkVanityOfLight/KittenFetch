@@ -96,17 +96,17 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
     // Line 0 is just the cat
     buffer[0] = cat[0];
 
-    // Line 1 contains the username@hostname
+    // Line 1 contains the username
     var line1: []u8 = undefined;
-    line1 = try allocator.alloc(u8, 1 + cat_widht + space_between + hostname.len + 1 + username.len + 1);
+    line1 = try allocator.alloc(u8, 1 + cat_widht + space_between + username.len + 1);
 
     std.mem.copy(u8, line1, cat[1]);
     std.mem.copy(u8, line1[cat_widht..line1.len], &spaces);
     line1[cat_widht + space_between] = ' ';
     std.mem.copy(u8, line1[cat_widht + space_between + 1 .. line1.len], username);
 
-    line1[cat_widht + space_between + username.len + 1] = '@';
-    std.mem.copy(u8, line1[cat_widht + space_between + username.len + 1 + 1 .. line1.len], hostname);
+    //line1[cat_widht + space_between + username.len + 1] = '@';
+    // td.mem.copy(u8, line1[cat_widht + space_between + username.len + 1 + 1 .. line1.len], hostname);
 
     line1[line1.len - 1] = ' ';
 
@@ -114,7 +114,7 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
 
     // Line 2 contains the top of the second box
 
-    var boxlength: usize = 1 + hostname.len + 1 + username.len + 1;
+    var boxlength: usize = 1 + username.len + 1;
 
     if (boxlength < 5) {
         boxlength = 5;
