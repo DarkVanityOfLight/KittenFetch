@@ -1,5 +1,8 @@
 # KittenFetch README
 
+## Warning
+This is the first time working with a low level language, and I'm 99% sure this code is somehow exploitable ;(, so use on your own danger.
+
 ## Overview
 
 KittenFetch is a fun program written in the Zig programming language that generates a cat ASCII art along with a customized user box. 
