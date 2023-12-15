@@ -21,12 +21,28 @@ const expand_height = 0;
 
 const space_between = 5;
 
-// Prepare what we can at comptime
-// Copy the cat to it and
-comptime {
-    var renderBuffer: [cat_height + box_height + expand_height][]u8 = undefined;
-    _ = renderBuffer;
-}
+//ansi escape codes
+const esc = "\x1B";
+const csi = esc ++ "[";
+
+const cursor_show = csi ++ "?25h"; //h=high
+const cursor_hide = csi ++ "?25l"; //l=low
+const cursor_home = csi ++ "1;1H"; //1,1
+
+const color_fg = "38;5;";
+const color_bg = "48;5;";
+const color_fg_def = csi ++ color_fg ++ "15m"; // white
+const color_bg_def = csi ++ color_bg ++ "0m"; // black
+const color_def = color_bg_def ++ color_fg_def;
+
+const screen_clear = csi ++ "2J";
+const screen_buf_on = csi ++ "?1049h"; //h=high
+const screen_buf_off = csi ++ "?1049l"; //l=low
+
+const nl = "\n";
+
+const term_on = screen_buf_on ++ cursor_hide ++ cursor_home ++ screen_clear ++ color_def;
+const term_off = screen_buf_off ++ cursor_show ++ nl;
 
 // I hate string manipulations
 pub fn create_box(allocator: std.mem.Allocator, name: []const u8, box_wall_char: u8, box_floor_char: u8, box_space_char: u8) ![]const u8 {
@@ -179,10 +195,12 @@ fn renderCat(allocator: std.mem.Allocator, buffer: *[cat_height + box_height + e
 
 fn output(lines: [][]const u8, file: std.fs.File) !void {
     const writer = file.writer();
+    _ = try writer.write(screen_clear);
     for (lines) |line| {
         _ = try writer.write(line);
         _ = try writer.writeByte('\n');
     }
+    //_ = try writer.write(term_off);
 }
 
 test "Test output function" {
